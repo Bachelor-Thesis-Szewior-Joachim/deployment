@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - backend_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - my_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - my_network
+
+  backend_app:
+    build:
+      context: ./backend
+    container_name: spring_app
+    privileged: true
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      COINMARKETCAP_API_URL: d42f0690-3288-4f73-8230-da9ac5135859
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: [ "sh", "-c", "cd /app && ./mvnw spring-boot:run" ]
+    networks:
+      - my_network
+
+  nodejs_service:
+    build:
+      context: ./backend/src/main/java/org/example/backend/client/client/service/solanaScripts
+      dockerfile: Dockerfile
+    container_name: nodejs_service
+    volumes:
+      - ./backend/src/main/java/org/example/backend/client/client/service/solanaScripts:/app
+    working_dir: /app
+    ports:
+      - "3001:3000"
+    command: ["npm", "start"]
+    networks:
+      - my_network
+
+  frontend_app:
+    build:
+      context: ./frontend
+    container_name: frontend_app
+    volumes:
+      - ./frontend:/usr/app
+    ports:
+      - "3000:3000"
+    command: ["npm", "start"]
+    networks:
+      - my_network
+
+volumes:
+  backend_pg_data:
+    external: true
+
+networks:
+  my_network:
+    driver: bridge
