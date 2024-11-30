@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -9,6 +9,7 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydatabase
     volumes:
+      - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql
       - backend_pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
@@ -29,8 +30,7 @@ services:
       - my_network
 
   backend_app:
-    build:
-      context: ./backend
+    image: backend_image_v2
     container_name: spring_app
     privileged: true
     volumes:
@@ -48,27 +48,33 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
-    command: [ "sh", "-c", "cd /app && ./mvnw spring-boot:run" ]
     networks:
       - my_network
 
-  nodejs_service:
-    build:
-      context: ./backend/src/main/java/org/example/backend/client/client/service/solanaScripts
-      dockerfile: Dockerfile
-    container_name: nodejs_service
+  solana_scripts_service:
+    image: solana_scripts_image
+    container_name: solana_scripts_service
     volumes:
       - ./backend/src/main/java/org/example/backend/client/client/service/solanaScripts:/app
     working_dir: /app
     ports:
-      - "3001:3000"
+      - "3001:3001"
     command: ["npm", "start"]
     networks:
       - my_network
 
+  model_server:
+    image: model_server
+    container_name: model_server
+    ports:
+      - "5000:5000"
+    networks:
+      - my_network
+    volumes:
+      - ./models:/models  # Optional, if you need to bind models directory
+
   frontend_app:
-    build:
-      context: ./frontend
+    image: frontend_image
     container_name: frontend_app
     volumes:
       - ./frontend:/usr/app
@@ -80,7 +86,6 @@ services:
 
 volumes:
   backend_pg_data:
-    external: true
 
 networks:
   my_network:
