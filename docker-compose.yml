@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres_custom
     container_name: postgres_db
     environment:
       POSTGRES_USER: myuser
@@ -30,7 +30,7 @@ services:
       - my_network
 
   backend_app:
-    image: backend_image_v2
+    image: backend_image
     container_name: spring_app
     privileged: true
     volumes:
@@ -64,14 +64,14 @@ services:
       - my_network
 
   model_server:
-    image: model_server
+    image: model_server_image
     container_name: model_server
     ports:
       - "5000:5000"
     networks:
       - my_network
     volumes:
-      - ./models:/models  # Optional, if you need to bind models directory
+      - ./models:/models
 
   frontend_app:
     image: frontend_image
