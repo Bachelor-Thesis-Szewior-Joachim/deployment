@@ -1,8 +1,6 @@
-version: "3.8"
-
 services:
   postgres:
-    image: postgres_custom
+    image: joaszek/bachelor-thesis:postgres_custom
     container_name: postgres_db
     environment:
       POSTGRES_USER: myuser
@@ -30,7 +28,7 @@ services:
       - my_network
 
   backend_app:
-    image: backend_image
+    image: joaszek/bachelor-thesis:backend_image
     container_name: spring_app
     privileged: true
     volumes:
@@ -52,7 +50,7 @@ services:
       - my_network
 
   solana_scripts_service:
-    image: solana_scripts_image
+    image: joaszek/bachelor-thesis:solana_scripts_image
     container_name: solana_scripts_service
     volumes:
       - ./backend/src/main/java/org/example/backend/client/client/service/solanaScripts:/app
@@ -64,7 +62,7 @@ services:
       - my_network
 
   model_server:
-    image: model_server_image
+    image: joaszek/bachelor-thesis:model_server_image
     container_name: model_server
     ports:
       - "5000:5000"
@@ -74,7 +72,9 @@ services:
       - ./models:/models
 
   frontend_app:
-    image: frontend_image
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend_app
     volumes:
       - ./frontend:/usr/app
