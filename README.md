@@ -44,4 +44,4 @@ docker compose down
 
 ## Conclusion
 
-This project is a full-stack application with a Dockerized all services. 
+This project is a full-stack application with all services dockerized. 
