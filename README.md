@@ -32,6 +32,8 @@ docker compose up
 This will pull the necessary images and start the containers for the frontend, backend, solana, model and database. The services will be accessible as follows:
 
 - **Frontend**: `http://localhost:3000`
+- **Solana**: `http://localhost:3001`
+- **Model**: `http://localhost:5000`
 - **Backend**: `http://localhost:8080`
 
 ### Stopping the Services
